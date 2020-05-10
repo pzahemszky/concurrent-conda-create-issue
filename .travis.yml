@@ -1,0 +1,31 @@
+language: minimal
+os: linux
+dist: xenial
+
+env:
+  # Disable the progress reporting
+  - TOX_PARALLEL_NO_SPINNER="1"
+
+install:
+  # Install conda via Miniconda. Source:
+  # https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/
+  # use-conda-with-travis-ci.html#the-travis-yml-file
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  # Automatically choose the 'yes' option whenever asked to proceed with a conda operation
+  - conda config --set always_yes yes
+  # Upgrade conda to the latest version
+  - conda update --quiet conda
+
+  # Create a conda environment with Python 3.7
+  - conda create --quiet --name=py37-conda-env python=3.7
+  # Install tox and tox-conda from the appropriate channel
+  - conda install --name=py37-conda-env --channel=conda-forge 'tox>=3.0.0' tox-conda
+  - conda activate py37-conda-env
+
+script:
+  # Trigger multiple concurrent `conda create` commands via `tox --parallel`
+  - tox -v --parallel auto --parallel-live
+
